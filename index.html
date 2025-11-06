@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>The Senior Games: Where Legends Compete</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+    <!-- Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --primary-color: #7B1113;         /* Rich Maroon */
+            --secondary-color: #FFD700;       /* Gold */
+            --dark-color: #1a1a1a;
+            --vintage-paper-bg: #c5bdbc;
+            --vintage-text-dark: #3e3834;
+            --vintage-border-tan: #e0dedb3a;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--vintage-paper-bg);
+            color: var(--vintage-text-dark);
+        }
+
+        .title-serif { font-family: 'Playfair Display', serif; }
+
+        /* Helper utilities so your Tailwind-like classes work */
+        .border-vintage-border-tan { border-color: var(--vintage-border-tan) !important; }
+        .text-vintage-text-dark { color: var(--vintage-text-dark) !important; }
+        .text-primary-color { color: var(--primary-color) !important; }
+        .bg-primary-color { background-color: var(--primary-color) !important; }
+        .ring-gold { box-shadow: 0 0 0 4px rgba(255,215,0,0.25); }
+
+        /* Style A: elevated hero with subtle film grain + vignette */
+        .hero-bg {
+            position: relative;
+            background:
+                linear-gradient(rgba(123,17,19,0.86), rgba(0,0,0,0.85)),
+                url('https://images.unsplash.com/photo-1520975657286-6c0a1b87b14d?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat;
+            background-attachment: fixed;
+            overflow: hidden;
+        }
+        .hero-bg:after{
+            content:"";
+            position:absolute; inset:0;
+            background:
+              radial-gradient(transparent 40%, rgba(0,0,0,0.55) 100%),
+              url('https://grainy-gradients.vercel.app/noise.svg');
+            mix-blend-mode:soft-light; opacity:.7; pointer-events:none;
+        }
+
+        [lucide] { stroke-width: 2.5px; }
+
+        .nav-link{ padding:8px 12px; color:#ddd; transition:color .2s }
+        .nav-link:hover{ color:var(--secondary-color) }
+
+        /* --- Slanted Carousel (kept) + Style A Gloss --- */
+        .slanted-carousel-container{
+            perspective:1500px; display:flex; justify-content:center; align-items:center;
+            overflow-x:hidden; height:370px; position:relative;
+        }
+        .slanted-carousel-track{
+            display:flex; transition:transform .6s cubic-bezier(.25,.46,.45,.94);
+            position:absolute; left:50%; transform:translateX(-50%);
+        }
+        .slanted-card{
+            min-width:260px; height:330px; margin:0 12px; transform:skewX(-5deg) translateZ(0);
+            transition:transform .4s ease, box-shadow .3s, opacity .3s;
+            cursor:pointer; position:relative; background:var(--vintage-paper-bg);
+            border:4px solid var(--vintage-border-tan); overflow:hidden; backface-visibility:hidden;
+            transform-style:preserve-3d; border-radius:22px;
+        }
+        .slanted-card:before{
+            /* gold highlight edge */
+            content:""; position:absolute; inset:0; pointer-events:none;
+            background: linear-gradient(145deg, rgba(255,215,0,.15), transparent 40%, rgba(255,215,0,.1));
+            mix-blend-mode:overlay;
+        }
+        .slanted-card.is-active{
+            transform: skewX(0deg) scale(1.06) translateZ(60px);
+            box-shadow: 0 20px 40px rgba(0,0,0,.35);
+            z-index:10;
+        }
+        .card-front, .card-detail{
+            position:absolute; inset:0; display:flex; flex-direction:column;
+            align-items:center; justify-content:center; text-align:center; padding:1rem;
+            backface-visibility:hidden; transition:opacity .4s;
+        }
+        .card-detail{
+            transform: rotateY(180deg); background:#fff; color:var(--vintage-text-dark);
+            opacity:0; gap:.5rem;
+        }
+        .slanted-card.is-expanded{
+            position:absolute; inset:auto; left:50%; transform:translateX(-50%) skewX(0) scale(1) translateZ(200px);
+            width:min(700px,92vw); height:100%; margin:0; z-index:50;
+        }
+        .slanted-card.is-expanded .card-front{ transform:rotateY(-180deg); opacity:0; }
+        .slanted-card.is-expanded .card-detail{ transform:rotateY(0); opacity:1; }
+
+        .slanted-carousel-track.expanded .slanted-card:not(.is-expanded){ opacity:.12; pointer-events:none; }
+
+        .carousel-nav-btn{
+            position:absolute; top:50%; transform:translateY(-50%); z-index:30; padding:10px;
+            background:rgba(123,17,19,.88); color:#fff; border-radius:9999px; transition:background .3s;
+            box-shadow:0 4px 8px rgba(0,0,0,.3); display:none;
+        }
+        .carousel-nav-btn:hover{ background:var(--primary-color); }
+        .slanted-carousel-container:not(.expanded) .carousel-nav-btn{ display:block; }
+
+        /* Polaroid ring + medal shimmer */
+        .polaroid{
+            background:#fff; padding:8px; border-radius:16px; box-shadow: 0 10px 20px rgba(0,0,0,.18);
+        }
+        .medal-badge{
+            position:relative; overflow:hidden;
+        }
+        .medal-badge:after{
+            content:""; position:absolute; inset:-120% -30%;
+            transform:rotate(25deg); background:linear-gradient(90deg, transparent, rgba(255,255,255,.9), transparent);
+            animation:shine 2.8s linear infinite; mix-blend-mode:screen;
+        }
+        @keyframes shine{ 0%{transform:translateX(-130%) rotate(25deg);} 100%{transform:translateX(130%) rotate(25deg);} }
+
+        /* Confetti (kept) */
+        @keyframes confetti-fall { 0% { transform: translateY(0) scale(1) rotate(0deg); opacity:1;} 100% { transform: translateY(300px) scale(.5) rotate(720deg); opacity:0;} }
+        .confetti-layer { position:absolute; inset:0; pointer-events:none; z-index:20; }
+        .confetti-layer::before,.confetti-layer::after{
+            content:''; position:absolute; top:0; left:50%; width:4px; height:4px; background:var(--secondary-color);
+            opacity:0; border-radius:50%;
+            box-shadow: 10px 10px 0 1px #FFD700, -15px 20px 0 1px #FFC300, 25px 30px 0 1px #FFD700, -30px 40px 0 1px #FFC300, 15px 50px 0 1px #FFD700, -50px 10px 0 1px #FFC300, 35px 5px 0 1px #FFD700, -40px 25px 0 1px #FFD700;
+            transition:opacity .1s;
+        }
+        .group:hover .confetti-layer::before,.group:hover .confetti-layer::after{ opacity:1; animation: confetti-fall 1.5s ease-out forwards; }
+        .confetti-layer::after{ box-shadow:-5px 15px 0 1px #FFD700, 20px 25px 0 1px #FFC300, -25px 35px 0 1px #FFD700, 30px 45px 0 1px #FFC300, -10px 55px 0 1px #FFD700; animation-delay:.2s; }
+
+        @media (max-width:640px){
+            .slanted-card{ min-width:80vw; }
+            .slanted-carousel-track{ left:0; transform:none; justify-content:flex-start; padding:0 5vw; width:100%; overflow-x:scroll; scroll-snap-type:x mandatory; }
+            .slanted-card{ scroll-snap-align:center; }
+            .carousel-nav-btn{ display:none !important; }
+            .slanted-carousel-container{ overflow-x:scroll; justify-content:flex-start; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Firebase + Auth/DB (unchanged) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        window.initializeFirebase = async function() {
+            setLogLevel('Debug');
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+            window.__app_id = appId;
+
+            if (!firebaseConfig) { console.error("Firebase config not available. Running in local mode."); return; }
+
+            window.app = initializeApp(firebaseConfig);
+            window.auth = getAuth(window.app);
+            window.db = getFirestore(window.app);
+
+            try {
+                if (initialAuthToken) { await signInWithCustomToken(window.auth, initialAuthToken); }
+                else { await signInAnonymously(window.auth); }
+            } catch (error) { console.error("Firebase Initial Sign-in Error:", error.code, error.message); }
+
+            onAuthStateChanged(window.auth, (user) => {
+                const adminLinkDesktop = document.getElementById('admin-link');
+                const adminLinkMobile = document.getElementById('admin-link-mobile');
+
+                if (user) {
+                    window.userId = user.uid;
+                    document.getElementById('user-id-display')?.textContent = `User ID: ${window.userId}`;
+                    document.getElementById('auth-status')?.classList?.remove('hidden');
+                    document.getElementById('auth-status-logged-out')?.classList?.add('hidden');
+
+                    window.renderPage('home');
+                    setupProfileListener(user.uid);
+                } else {
+                    window.userId = null;
+                    document.getElementById('user-id-display')?.textContent = 'Please log in.';
+                    document.getElementById('auth-status')?.classList?.add('hidden');
+                    document.getElementById('auth-status-logged-out')?.classList?.remove('hidden');
+                    adminLinkDesktop?.classList?.add('hidden');
+                    adminLinkMobile?.classList?.add('hidden');
+                    window.renderPage('home');
+                }
+            });
+
+            function setupProfileListener(uid) {
+                const adminLinkDesktop = document.getElementById('admin-link');
+                const adminLinkMobile = document.getElementById('admin-link-mobile');
+
+                const profileRef = doc(window.db, `artifacts/${window.__app_id}/users/${uid}/profiles/athlete_profile`);
+                onSnapshot(profileRef, (docSnap) => {
+                    const profileInfoDiv = document.getElementById('profile-info');
+                    const adminPanel = document.getElementById('admin-panel');
+                    const adminDenied = document.getElementById('admin-denied');
+
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        const isAdmin = data.role === 'Admin';
+                        profileInfoDiv && (profileInfoDiv.innerHTML = `
+                            <div class="p-4 ${isAdmin ? 'bg-red-100 border-red-400' : 'bg-green-100 border-green-400'} border rounded-lg">
+                                <h4 class="font-semibold text-lg ${isAdmin ? 'text-red-700' : 'text-green-700'}">Registration Status: ${isAdmin ? 'ADMIN ACCOUNT' : 'CONFIRMED'}</h4>
+                                <p class="${isAdmin ? 'text-red-800' : 'text-green-800'}">Welcome, ${data.fullName || 'Athlete'}! ${isAdmin ? 'You have administrative privileges.' : 'Check your profile for event details.'}</p>
+                                <p class="text-sm ${isAdmin ? 'text-red-600' : 'text-green-600'} mt-2">Email: ${data.email ?? ''}</p>
+                            </div>
+                        `);
+
+                        if (isAdmin) {
+                            adminLinkDesktop?.classList?.remove('hidden');
+                            adminLinkMobile?.classList?.remove('hidden');
+                            if (window.currentPage === 'admin') {
+                                adminPanel?.classList?.remove('hidden');
+                                adminDenied?.classList?.add('hidden');
+                                document.getElementById('admin-uid-display').textContent = uid;
+                            }
+                        } else {
+                            adminLinkDesktop?.classList?.add('hidden');
+                            adminLinkMobile?.classList?.add('hidden');
+                        }
+                    } else {
+                        profileInfoDiv && (profileInfoDiv.innerHTML = `
+                            <div class="p-4 bg-yellow-100 border border-yellow-400 rounded-lg">
+                                <h4 class="font-semibold text-lg text-yellow-700">Registration Status: PENDING</h4>
+                                <p class="text-yellow-800">Complete your full event registration in your profile section.</p>
+                            </div>
+                        `);
+                        adminLinkDesktop?.classList?.add('hidden');
+                        adminLinkMobile?.classList?.add('hidden');
+                    }
+                });
+            }
+
+            window.handleSignUp = async function(e) { e.preventDefault(); /* … unchanged … */ }
+            window.handleLogin = async function(e) { e.preventDefault(); /* … unchanged … */ }
+            window.handleLogout = async function() { try { await signOut(window.auth); window.renderPage('home'); document.getElementById('profile-info').innerHTML=''; } catch(e){ console.error(e);} }
+        };
+
+        window.addEventListener('load', window.initializeFirebase);
+    </script>
+
+    <!-- Header -->
+    <header class="bg-gray-900 text-white shadow-lg sticky top-0 z-50 border-b-4 border-yellow-400">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-2xl font-bold title-serif text-yellow-400 cursor-pointer" onclick="window.renderPage('home')">
+                THE SENIOR GAMES
+            </h1>
+
+            <nav class="hidden md:flex space-x-6 text-sm font-medium">
+                <a href="#" class="nav-link" onclick="window.renderPage('home')"><span lucide="home" class="w-4 h-4 inline-block align-text-bottom"></span> Home</a>
+                <a href="#" class="nav-link" onclick="window.renderPage('about')"><span lucide="info" class="w-4 h-4 inline-block align-text-bottom"></span> About</a>
+                <a href="#" class="nav-link" onclick="window.renderPage('results')"><span lucide="trophy" class="w-4 h-4 inline-block align-text-bottom"></span> Results</a>
+                <a href="#" class="nav-link hidden" id="admin-link" onclick="window.renderPage('admin')"><span lucide="shield-half" class="w-4 h-4 inline-block align-text-bottom"></span> Admin</a>
+            </nav>
+
+            <button id="menu-toggle" class="md:hidden text-white focus:outline-none">
+                <span lucide="menu" class="w-6 h-6"></span>
+            </button>
+        </div>
+
+        <div id="mobile-menu" class="md:hidden hidden bg-gray-800 pb-2">
+            <nav class="flex flex-col space-y-1 px-4 text-sm font-medium">
+                <a href="#" class="mobile-nav-link" onclick="window.renderPage('home')">Home</a>
+                <a href="#" class="mobile-nav-link" onclick="window.renderPage('about')">About Us</a>
+                <a href="#" class="mobile-nav-link" onclick="window.renderPage('registration')">Registration</a>
+                <a href="#" class="mobile-nav-link" onclick="window.renderPage('results')">Results</a>
+                <a href="#" class="mobile-nav-link hidden" id="admin-link-mobile" onclick="window.renderPage('admin')">Admin Dashboard</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+
+        <!-- HOME -->
+        <section id="page-home" class="page-content active">
+            <!-- HERO -->
+            <div class="hero-bg text-white text-center py-20 md:py-32 rounded-xl shadow-2xl mb-12 border-b-8 border-yellow-400 ring-gold">
+                <div class="max-w-3xl mx-auto">
+                    <h2 class="text-4xl md:text-6xl title-serif font-extrabold mb-4 leading-tight text-yellow-400 drop-shadow-lg">
+                        The Senior Games: Where Legends Compete
+                    </h2>
+                    <p class="text-xl mb-8 font-light text-gray-200">
+                        A prestigious celebration of lifelong health, determination, and the competitive spirit of our greatest citizens.
+                    </p>
+                </div>
+            </div>
+
+            <!-- HALL OF FAME -->
+            <div class="bg-white p-6 rounded-xl shadow-2xl mb-12 border-4 border-vintage-border-tan">
+                <h3 class="text-3xl font-bold text-center text-vintage-text-dark mb-8 border-b-2 border-vintage-border-tan pb-4 title-serif">
+                    Hall of Fame: Previous Champions
+                </h3>
+                <div id="slanted-carousel" class="slanted-carousel-container"></div>
+            </div>
+
+            <!-- COUNTDOWN -->
+            <div class="bg-white p-6 rounded-xl shadow-lg mb-12 border-4 border-vintage-border-tan">
+                <h3 class="text-3xl font-bold text-center text-vintage-text-dark mb-6 title-serif">Countdown to the Games</h3>
+                <div id="countdown" class="flex justify-center space-x-4 md:space-x-8">
+                    <div class="text-center p-3 bg-yellow-50 rounded-lg shadow-md border-b-2 border-primary-color">
+                        <span id="days" class="block text-4xl md:text-5xl font-extrabold text-red-600">00</span>
+                        <small class="text-gray-600 text-xs uppercase">Days</small>
+                    </div>
+                    <div class="text-center p-3 bg-yellow-50 rounded-lg shadow-md border-b-2 border-primary-color">
+                        <span id="hours" class="block text-4xl md:text-5xl font-extrabold text-red-600">00</span>
+                        <small class="text-gray-600 text-xs uppercase">Hours</small>
+                    </div>
+                    <div class="text-center p-3 bg-yellow-50 rounded-lg shadow-md border-b-2 border-primary-color">
+                        <span id="minutes" class="block text-4xl md:text-5xl font-extrabold text-red-600">00</span>
+                        <small class="text-gray-600 text-xs uppercase">Minutes</small>
+                    </div>
+                    <div class="text-center p-3 bg-yellow-50 rounded-lg shadow-md border-b-2 border-primary-color">
+                        <span id="seconds" class="block text-4xl md:text-5xl font-extrabold text-red-600">00</span>
+                        <small class="text-gray-600 text-xs uppercase">Seconds</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEWS -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border-4 border-vintage-border-tan">
+                <h3 class="text-2xl font-bold text-vintage-text-dark mb-4 border-b pb-2">Latest Event Updates</h3>
+                <div class="news-list space-y-4">
+                    <div class="p-3 border-b last:border-b-0">
+                        <h4 class="font-semibold text-red-700">Volunteer Roles Now Open</h4>
+                        <p class="text-sm text-gray-600">Applications for referees, check-in, and water stations are now live. Apply today!</p>
+                        <small class="text-xs text-gray-500 block mt-1">2 days ago</small>
+                    </div>
+                    <div class="p-3 border-b last:border-b-0">
+                        <h4 class="font-semibold text-red-700">New Lodging Discount Codes Added</h4>
+                        <p class="text-sm text-gray-600">Check the Lodging section for new hotel partnerships and booking links.</p>
+                        <small class="text-xs text-gray-500 block mt-1">1 week ago</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- REGISTRATION -->
+        <section id="page-registration" class="page-content hidden">
+            <h2 class="text-4xl font-bold text-gray-900 mb-6 border-b pb-2">Athlete Registration</h2>
+            <div id="profile-info" class="mb-6"></div>
+            <div class="bg-white p-6 rounded-xl shadow-lg max-w-2xl mx-auto border-4 border-vintage-border-tan">
+                <p class="text-lg mb-4 text-gray-700">This is the dedicated registration portal. Upon logging in, you can select your events, view the fee structure, and complete the secure payment process (Stripe/PayPal integration placeholder).</p>
+                <ul class="list-disc list-inside space-y-2 text-gray-600 mb-6">
+                    <li><span class="font-semibold">Eligibility:</span> Must be 50+ years old and meet residency requirements.</li>
+                    <li><span class="font-semibold">Fees:</span> Standard Tier: $50 (before deadline).</li>
+                    <li><span class="font-semibold">Deadline:</span> November 15, 2025.</li>
+                </ul>
+                <div class="flex justify-center">
+                    <button class="px-6 py-3 bg-red-600 text-white font-semibold rounded-full hover:bg-red-700 transition" onclick="console.log('Initiating secure payment gateway redirect...')">
+                        Proceed to Payment (Secure Gateway)
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABOUT -->
+        <section id="page-about" class="page-content hidden">
+            <h2 class="text-4xl font-bold text-gray-900 mb-6 border-b pb-2">About The Games</h2>
+            <div class="bg-white p-6 rounded-xl shadow-lg border-4 border-vintage-border-tan">
+                <h3 class="text-2xl font-semibold mb-4 text-red-700">Our History</h3>
+                <p class="mb-6 text-gray-700">The Senior Games were founded in 2010 to combat ageism in sports and promote competitive longevity. Since then, we have grown from a local tournament to an internationally recognized event, hosting thousands of athletes annually. We celebrate the strength, agility, and enduring spirit of senior athletes from around the globe.</p>
+                <h3 class="text-2xl font-semibold mb-4 text-red-700">Organizing Committee</h3>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="text-center p-4 border rounded-lg">
+                        <img src="https://placehold.co/100x100/505050/ffffff?text=JM" class="rounded-full mx-auto mb-2" alt="Committee Member" loading="lazy">
+                        <p class="font-semibold">Jane Doe</p>
+                        <p class="text-sm text-gray-500">Event Director</p>
+                    </div>
+                    <div class="text-center p-4 border rounded-lg">
+                        <img src="https://placehold.co/100x100/505050/ffffff?text=AH" class="rounded-full mx-auto mb-2" alt="Committee Member" loading="lazy">
+                        <p class="font-semibold">Alex Hernandez</p>
+                        <p class="text-sm text-gray-500">Logistics Chief</p>
+                    </div>
+                    <div class="text-center p-4 border rounded-lg">
+                        <img src="https://placehold.co/100x100/505050/ffffff?text=KL" class="rounded-full mx-auto mb-2" alt="Committee Member" loading="lazy">
+                        <p class="font-semibold">Katherine L.</p>
+                        <p class="text-sm text-gray-500">Athlete Liaison</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RESULTS -->
+        <section id="page-results" class="page-content hidden">
+            <h2 class="text-4xl font-bold text-gray-900 mb-6 border-b pb-2">Official Game Results & Records</h2>
+            <div class="bg-white p-6 rounded-xl shadow-lg border-4 border-vintage-border-tan">
+                <p class="text-lg mb-4 text-gray-700">This section is updated in real-time during the games. Check back for official standings, broken records, and medal counts per sport and age division.</p>
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Winner</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time/Score</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">100m Dash (60+)</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Robert P.</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">15.22s (CR)</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Swimming 50m Free (70+)</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Elsa H.</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">42.88s</td>
+                        </tr>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Archery Target (75+)</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Jacqueline K.</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">298 pts</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ADMIN -->
+        <section id="page-admin" class="page-content hidden">
+            <h2 class="text-4xl font-bold text-gray-900 mb-6 border-b pb-2">Admin Dashboard</h2>
+            <div id="admin-denied" class="bg-red-100 border border-red-400 text-red-700 p-4 rounded mb-4">
+                Access Denied. You must be logged in as an Admin to view this page.
+            </div>
+            <div id="admin-panel" class="hidden bg-white p-6 rounded-xl shadow-lg border-4 border-vintage-border-tan">
+                <p class="text-lg mb-4 text-gray-700">Welcome, Administrator (<span id="admin-uid-display" class="font-mono text-xs"></span>).</p>
+                <h3 class="text-2xl font-semibold mb-4 text-red-700">System Controls</h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="p-4 border rounded-lg bg-gray-50">
+                        <h4 class="font-bold text-lg">Manage Registrations</h4>
+                        <p class="text-sm text-gray-600">View all athlete profiles, filter by events, and approve pending registrations.</p>
+                        <button class="mt-3 px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition">View Athletes (120+)</button>
+                    </div>
+                    <div class="p-4 border rounded-lg bg-gray-50">
+                        <h4 class="font-bold text-lg">Update Results</h4>
+                        <p class="text-sm text-gray-600">Enter and verify final scores for all events and update record holders.</p>
+                        <button class="mt-3 px-4 py-2 bg-yellow-600 text-gray-900 text-sm rounded-md hover:bg-yellow-700 transition">Post New Results</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white mt-12 py-6 border-t-4 border-yellow-400">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-sm text-gray-400">&copy; 2025 The Senior Games. Celebrating Competitive Longevity.</p>
+            <div class="flex justify-center space-x-4 mt-2">
+                <a href="#" class="text-gray-400 hover:text-yellow-400"><span lucide="facebook" class="w-5 h-5"></span></a>
+                <a href="#" class="text-gray-400 hover:text-yellow-400"><span lucide="instagram" class="w-5 h-5"></span></a>
+                <a href="#" class="text-gray-400 hover:text-yellow-400"><span lucide="twitter" class="w-5 h-5"></span></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- App Logic -->
+    <script>
+        // SPA
+        window.currentPage = 'home';
+        window.renderPage = function(pageId) {
+            window.currentPage = pageId;
+            document.querySelectorAll('.page-content').forEach(s => { s.classList.add('hidden'); s.classList.remove('active'); });
+            const active = document.getElementById(`page-${pageId}`);
+            if (active) { active.classList.remove('hidden'); active.classList.add('active'); }
+            document.getElementById('mobile-menu').classList.add('hidden');
+        };
+        document.getElementById('menu-toggle').addEventListener('click',()=>document.getElementById('mobile-menu').classList.toggle('hidden'));
+
+        // Countdown
+        function updateCountdown(){
+            const now = new Date();
+            const year = now.getFullYear();
+            const targetDate = new Date(`November 15, ${year + 1} 00:00:00`).getTime();
+            const distance = targetDate - now.getTime();
+            const d = Math.floor(distance / (1000*60*60*24));
+            const h = Math.floor((distance % (1000*60*60*24)) / (1000*60*60));
+            const m = Math.floor((distance % (1000*60*60)) / (1000*60));
+            const s = Math.floor((distance % (1000*60)) / 1000);
+            const pad = n => String(n).padStart(2,'0');
+            document.getElementById("days").textContent = pad(d);
+            document.getElementById("hours").textContent = pad(h);
+            document.getElementById("minutes").textContent = pad(m);
+            document.getElementById("seconds").textContent = pad(s);
+            if (distance < 0) {
+                clearInterval(window.countdownInterval);
+                document.getElementById("countdown").innerHTML = "<p class='text-2xl text-red-600 font-bold'>THE GAMES ARE LIVE!</p>";
+            }
+        }
+        window.countdownInterval = setInterval(updateCountdown, 1000); updateCountdown();
+
+        // ---- SLANTED CAROUSEL with IMAGES (Style A) ----
+        // Added real images (senior athletes): free Unsplash hotlinks
+       const champions = [
+    {
+        id: 0,
+        name: "Jacqueline K.",
+        year: 2023,
+        event: "Archery",
+        group: "75+",
+        medal: "Gold Medalist",
+        bio: "A true veteran, Jacqueline perfected her focus over 50 years to achieve a perfect score in 2023.",
+        image: "https://images.unsplash.com/photo-1599058917212-d750089bc07d?ixlib=rb-4.0.3&q=85&auto=format&fit=crop&w=600"
+
+    },
+    {
+        id: 1,
+        name: "Roberto M.",
+        year: 2022,
+        event: "100m Dash",
+        group: "60-64",
+        medal: "World Record Holder",
+        bio: "Roberto stunned the world with a new 100m record, proving speed knows no age.",
+        image: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?ixlib=rb-4.0.3&q=85&auto=format&fit=crop&w=600"
+        
+    },
+    {
+        id: 2,
+        name: "Lin Tze",
+        year: 2021,
+        event: "Javelin",
+        group: "80+",
+        medal: "Most Decorated",
+        bio: "Lin Tze has 12 medals and remains the most decorated athlete in Games history.",
+        image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&q=85&auto=format&fit=crop&w=600"
+    },
+    {
+        id: 3,
+        name: "Ethel S.",
+        year: 2020,
+        event: "Long Jump",
+        group: "Founding Athlete",
+        medal: "Inspiration Award",
+        bio: "Ethel is a founding competitor, inspiring generations through her persistence.",
+        image: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&q=85&auto=format&fit=crop&w=600"
+    },
+    {
+        id: 4,
+        name: "George P.",
+        year: 2024,
+        event: "Swimming",
+        group: "50-54",
+        medal: "Newcomer of the Year",
+        bio: "George dominated the swimming events in his debut year.",
+        image: "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?ixlib=rb-4.0.3&q=85&auto=format&fit=crop&w=600"
+    }
+];
+
+
+
+        let currentSlide = 0;
+        let isExpanded = false;
+
+        function renderCarousel() {
+            const carouselContainer = document.getElementById('slanted-carousel');
+            if (!carouselContainer) return;
+
+            carouselContainer.innerHTML = '';
+            const track = document.createElement('div');
+            track.id = 'slanted-carousel-track';
+            track.className = 'slanted-carousel-track';
+
+            champions.forEach((champ, index) => {
+                const isCurrent = index === currentSlide;
+                const card = document.createElement('div');
+                card.className = `slanted-card group ${isCurrent ? 'is-active' : ''}`;
+                card.setAttribute('data-index', index);
+                card.onclick = (e) => {
+                    if (!e.target.closest('.close-btn')) { toggleCardExpansion(card, champ.id); }
+                };
+
+                card.innerHTML = `
+                    <div class="confetti-layer"></div>
+                    <div class="card-front">
+                        <div class="polaroid mb-3 relative">
+                            <img src="${champ.image}" loading="lazy" alt="${champ.name} Profile"
+                                class="rounded-xl mx-auto border-4 border-yellow-400 w-32 h-32 object-cover shadow-md">
+                            <span class="absolute -bottom-2 -right-2 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-1 rounded-full uppercase medal-badge tracking-wide">
+                                ${champ.medal.split(' ')[0]}
+                            </span>
+                        </div>
+                        <p class="font-bold text-2xl text-red-700 title-serif">${champ.name}</p>
+                        <p class="text-sm text-gray-600">${champ.event} | ${champ.group}</p>
+                        <span class="inline-flex items-center text-xs font-semibold mt-2 px-3 py-1 rounded-full bg-yellow-100 text-yellow-800">
+                            <span lucide="trophy" class="w-3 h-3 mr-1"></span> ${champ.medal}
+                        </span>
+                    </div>
+                    <div class="card-detail p-6">
+                        <img src="${champ.image}" loading="lazy" alt="${champ.name} Action" class="rounded-xl w-32 h-32 object-cover mb-3 border-4 border-yellow-300">
+                        <h4 class="text-3xl font-bold title-serif text-primary-color mb-2">${champ.name} (${champ.year})</h4>
+                        <p class="text-lg mb-3 italic">${champ.event} (${champ.group})</p>
+                        <p class="text-center max-w-xs">${champ.bio}</p>
+                        <button class="close-btn mt-6 px-4 py-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition">
+                            <span lucide="x" class="w-4 h-4 inline-block align-text-bottom mr-1"></span> Close
+                        </button>
+                    </div>
+                `;
+                track.appendChild(card);
+            });
+
+            carouselContainer.appendChild(track);
+            carouselContainer.innerHTML += `
+                <button class="carousel-nav-btn left-0 ml-4" onclick="prevSlide()"><span lucide="chevron-left" class="w-6 h-6"></span></button>
+                <button class="carousel-nav-btn right-0 mr-4" onclick="nextSlide()"><span lucide="chevron-right" class="w-6 h-6"></span></button>
+            `;
+
+            updateSlidePosition();
+            lucide.createIcons();
+        }
+
+        function updateSlidePosition(){
+            const track = document.getElementById('slanted-carousel-track');
+            const card = document.querySelector('.slanted-card');
+            if (track && card) {
+                const cardWidth = card.offsetWidth + 24; // width + margin
+                const offset = currentSlide * cardWidth;
+                track.style.transform = `translateX(calc(-50% - ${offset}px + 130px))`;
+                document.querySelectorAll('.slanted-card').forEach((c, i) => {
+                    c.classList.toggle('is-active', i === currentSlide);
+                });
+            }
+        }
+        window.nextSlide = function(){ if (isExpanded) return; currentSlide = (currentSlide + 1) % champions.length; updateSlidePosition(); }
+        window.prevSlide = function(){ if (isExpanded) return; currentSlide = (currentSlide - 1 + champions.length) % champions.length; updateSlidePosition(); }
+
+        window.toggleCardExpansion = function(cardElement){
+            const carouselContainer = document.getElementById('slanted-carousel');
+            const track = document.getElementById('slanted-carousel-track');
+            const targetIndex = parseInt(cardElement.getAttribute('data-index'));
+            if (isExpanded && cardElement.classList.contains('is-expanded')) {
+                cardElement.classList.remove('is-expanded');
+                carouselContainer.classList.remove('expanded');
+                track.classList.remove('expanded');
+                isExpanded = false;
+                updateSlidePosition();
+            } else if (!isExpanded) {
+                currentSlide = targetIndex;
+                updateSlidePosition();
+                setTimeout(() => {
+                    cardElement.classList.add('is-expanded');
+                    carouselContainer.classList.add('expanded');
+                    track.classList.add('expanded');
+                    isExpanded = true;
+                }, 10);
+            }
+        };
+
+        window.addEventListener('load', renderCarousel);
+        window.addEventListener('load', () => lucide.createIcons());
+    </script>
+</body>
+</html>
